@@ -120,10 +120,16 @@ class Missionarios_Canibais():
         """
         # Insere a raiz na fila de execução, que será utilizada para fazer uma busca em largura
         self.fila_execucao = [Estado(3, 0, 3, 0, 'esq')]
-        self.pilha_execucao = [Estado(3, 0, 3, 0, 'esq')]
+        self.pilha_execucao = None
         self.solucao = None
         self.numero_estados = 0
         self.estados_visitados = []
+
+    def verifica(self, elemento, fila):
+        for i in fila:
+            if elemento == i:
+                return True
+        return False
 
     def gerar_solucao_busca_largura(self):
         """
@@ -139,30 +145,22 @@ class Missionarios_Canibais():
             if elemento.estado_final():
                 # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                 # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                '''self.solucao = [elemento]
-                while elemento.pai:
-                    self.solucao.insert(0, elemento.pai)
-                    elemento = elemento.pai'''
                 break;
             # Caso o elemento não seja a solução, gera seus filhos e os adiciona na fila de execução
             elemento.gerar_filhos()
             for i in elemento.filhos:
                 if not self.verifica(i, self.fila_execucao):
                     self.fila_execucao.append(i)
-
-    def verifica(self, elemento, fila):
-        for i in fila:
-            if elemento == i:
-                return True
-        return False
         
 
     def gerar_solucao_busca_profundidade(self):
-        for elemento in self.pilha_execucao:
+        self.pilha_execucao = Pilha()
+        self.pilha_execucao.push(Estado(3, 0, 3, 0, 'esq'))
+        while not self.pilha_execucao.isEmpty():
             self.numero_estados+=1
             print 'Numero de estados visitados: ', self.numero_estados
-            print '-> ESTADO ATUAL:'
-            print elemento
+            elemento = self.pilha_execucao.pop()
+            #print elemento
             if elemento.estado_final():
                 # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                 # o caminho de volta até a raiz da árvore de estados e então encerra a busca
@@ -171,15 +169,12 @@ class Missionarios_Canibais():
                     self.solucao.insert(0, elemento.pai)
                     elemento = elemento.pai
                 break;
-            # Caso o elemento não seja a solução, gera seus filhos e os adiciona na fila de execução
+            self.estados_visitados.append(elemento)
             elemento.gerar_filhos()
-            self.pilha_execucao.remove(elemento)
-            print '-> FILHOS: '
             for i in elemento.filhos:
-                if not self.verifica(i, self.pilha_execucao):
-                    print i
-                    self.pilha_execucao.insert(0, i)
-            raw_input('')
+                if not self.verifica(i, self.pilha_execucao.items):
+                    if not self.verifica(i, self.estados_visitados):
+                        self.pilha_execucao.push(i)   
 
 
     def gerar_solucao_heuristica_gulosa(self):
@@ -188,12 +183,29 @@ class Missionarios_Canibais():
     def gerar_solucao_heuristica_A(self):
         pass
 
+class Pilha():
+    def __init__(self) :
+        self.items = []
+
+    #empilha
+    def push(self, item) :
+        self.items.append(item)
+
+    #desempilha
+    def pop(self) :
+        return self.items.pop()
+
+    #verifica se a pilha esta vazia
+    def isEmpty(self) :
+        return (self.items == [])
+
+    
+
 if __name__ == '__main__':
     # Instancia o problema e gera sua solução
     problema = Missionarios_Canibais()
     problema.gerar_solucao_busca_profundidade()
     # Exibe a solução em tela, separando cada passo
-    '''for estado in problema.solucao:
+    for estado in problema.solucao:
         print estado
         print 34 * '-'
-    '''
