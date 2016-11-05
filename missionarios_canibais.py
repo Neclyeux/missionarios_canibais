@@ -69,6 +69,10 @@ class Estado():
         resultado_dir = self.missionarios_dir == self.canibais_dir == 3
         return resultado_esq and resultado_dir
 
+    #Calcula o valor deste estado usando a função f, que verifica o número de pessoas no lado errado do rio
+    def custo_f(self):
+        return self.missionarios_esq + self.canibais_esq
+    
     def gerar_filhos(self):
         """
             Gera todos os possíveis filhos de um estado, se este for um estado válido e não
@@ -118,9 +122,13 @@ class Missionarios_Canibais():
         """
             Inicializa uma instância do problema com uma raiz pré-definida e ainda sem solução.
         """
-        # Insere a raiz na fila de execução, que será utilizada para fazer uma busca em largura
+        
+        """ Insere a raiz na fila de execução, que será utilizada para fazer uma busca em largura; cria uma pilha de execução vazia que será usada na busca em profundidade;
+        e uma fronteira de estados, usada nas buscas heurísticas.
+        """
         self.fila_execucao = [Estado(3, 0, 3, 0, 'esq')]
         self.pilha_execucao = None
+        self.fronteira_estados = [Estado(3, 0, 3, 0, 'esq')]
         self.solucao = None
         self.numero_estados = 0
         self.estados_visitados = []
@@ -130,6 +138,18 @@ class Missionarios_Canibais():
             if elemento == i:
                 return True
         return False
+
+    
+    #retorna o estado com menor valor na fronteira de estados. Variável estado_menor_custo indica o estado menos custoso, que irá gerar os próximos estados.
+    def menor_custo(self):
+        estado_menor_custo = self.fronteira_estados[0]
+        minimo = self.fronteira_estados[0].custo_f()
+        for estado in self.fronteira_estados:
+            if estado.custo_f() < minimo:
+                minimo = estado.custo_f()
+                estado_menor_custo = estado
+        return estado_menor_custo
+            
 
     def gerar_solucao_busca_largura(self):
         """
@@ -145,6 +165,7 @@ class Missionarios_Canibais():
             if elemento.estado_final():
                 # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                 # o caminho de volta até a raiz da árvore de estados e então encerra a busca
+                self.solucao = [elemento]
                 break;
             # Caso o elemento não seja a solução, gera seus filhos e os adiciona na fila de execução
             elemento.gerar_filhos()
@@ -177,11 +198,32 @@ class Missionarios_Canibais():
                         self.pilha_execucao.push(i)   
 
 
-    def gerar_solucao_heuristica_gulosa(self):
-        pass
+    def gerar_solucao_busca_gulosa(self):
+        estados_visitados = []
+        while not self.solucao:
+            for elemento in self.fronteira_estados:
+                self.numero_estados+=1
+                print 'Numero de estados visitados: ', self.numero_estados
+                print elemento
+                print 34 * '-'
+                if elemento.estado_final():
+                    # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
+                    # o caminho de volta até a raiz da árvore de estados e então encerra a busca
+                    self.solucao = [elemento]
+                    break;
+                estados_visitados.append(elemento)
+                 #Caso não seja encontrado o estado final, o estado menor custo da fronteira é expandido e a busca continua.
+            estado_menor_custo = self.menor_custo()
+            estado_menor_custo.gerar_filhos()
+            for i in estado_menor_custo.filhos:
+                if not self.verifica(i, self.fronteira_estados) and not self.verifica(i, estados_visitados):
+                    self.fronteira_estados.append(i)   
+            self.fronteira_estados.remove(estado_menor_custo)
 
-    def gerar_solucao_heuristica_A(self):
+        
+    def gerar_solucao_busca_A(self):
         pass
+        
 
 class Pilha():
     def __init__(self) :
@@ -204,7 +246,7 @@ class Pilha():
 if __name__ == '__main__':
     # Instancia o problema e gera sua solução
     problema = Missionarios_Canibais()
-    problema.gerar_solucao_busca_profundidade()
+    problema.gerar_solucao_busca_gulosa()
     # Exibe a solução em tela, separando cada passo
     for estado in problema.solucao:
         print estado
