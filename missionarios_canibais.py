@@ -74,6 +74,7 @@ class Estado():
     def custo_f(self):
         return self.missionarios_esq + self.canibais_esq
 
+    #Calcula o valor deste estado usando a função f, que verifica o número de missionarios no lado errado do rio, mais o número de geracões para se atingir esse estado
     def custo_h(self):
         return self.missionarios_esq + self.geracoes
     
@@ -113,6 +114,7 @@ class Estado():
             filho = Estado(missionarios_esq, missionarios_dir, canibais_esq,
                            canibais_dir, novo_lado_rio)
             filho.pai = self
+            filho.geracoes = self.geracoes + 1
             if filho.estado_valido():
                 self.filhos.append(filho)
 
@@ -255,8 +257,7 @@ class Missionarios_Canibais():
             estado_menor_custo.gerar_filhos()
             for i in estado_menor_custo.filhos:
                 if not self.verifica(i, self.fronteira_estados) and not self.verifica(i, estados_visitados):
-                    self.fronteira_estados.append(i)
-                    i.geracoes+=1
+                    self.fronteira_estados.append(i) 
             self.fronteira_estados.remove(estado_menor_custo)
             
 class Pilha():
