@@ -15,11 +15,13 @@ class Estado():
         assim como pode ser a solução do problema ou não.
     """
 
-    def __init__(self, missionarios_esq, missionarios_dir, canibais_esq, canibais_dir, lado_rio):
+    def __init__(self, num_pessoas, missionarios_esq, missionarios_dir, canibais_esq, canibais_dir, lado_rio, tam_barco):
         """
             Inicializa um estado com as informações de quantidade de missionários e canibais de
             cada lado do rio, além da informação de em que lado do rio está o barco.
         """
+        self.tamanho_barco = tam_barco
+        self.num_pessoas = num_pessoas
         self.missionarios_esq = missionarios_esq
         self.missionarios_dir = missionarios_dir
         self.canibais_esq = canibais_esq
@@ -53,12 +55,14 @@ class Estado():
         """
         # Não se pode gerar estados onde o número de canibais ou missionários em qualquer lado
         # do rio seja negativo
+
         if ((self.missionarios_esq < 0) or (self.missionarios_dir < 0)
             or (self.canibais_esq < 0) or (self.canibais_dir < 0)):
             return False
         # Verifica se em ambas as margens do rio o número de missionários não é inferior ao número
         # de canibais. Lembrando que caso não hajam missionários em um dos lados, não é necessário
         # verificar o número de canibais nele.
+        
         return ((self.missionarios_esq == 0 or self.missionarios_esq >= self.canibais_esq) and
                 (self.missionarios_dir == 0 or self.missionarios_dir >= self.canibais_dir))
 
@@ -70,16 +74,16 @@ class Estado():
         """
         # Um estado é um estado final se todos os missionários e canibais atravessaram o rio
         resultado_esq = self.missionarios_esq == self.canibais_esq == 0
-        resultado_dir = self.missionarios_dir == self.canibais_dir == 3
+        resultado_dir = self.missionarios_dir == self.canibais_dir == self.num_pessoas
         return resultado_esq and resultado_dir
 
-    #Calcula o valor deste estado usando a função f, que verifica o número de pessoas no lado errado do rio
+    #Calcula o valor deste estado usando a função f, que verifica o número de pessoas no lado origem do rio
     def custo_f(self):
         return self.missionarios_esq + self.canibais_esq
 
-    #Calcula o valor deste estado usando a função f, que verifica o número de missionarios no lado errado do rio, mais o número de geracões para se atingir esse estado
+    #Calcula o valor deste estado usando a função f, que verifica o número de missionarios no lado destino do rio, mais o número de geracões(a profundidade) para se atingir esse estado.
     def custo_h(self):
-        return self.missionarios_esq + self.profundidade
+        return self.missionarios_dir + self.profundidade
     
     def gerar_filhos(self):
         """
@@ -89,13 +93,48 @@ class Estado():
         # Encontra o novo lado do rio
         novo_lado_rio = 'dir' if self.lado_rio == 'esq' else 'esq'
         # Gera a lista de possíveis movimentos
-        movimentos = [
-            {'missionarios': 2, 'canibais': 0},
-            {'missionarios': 1, 'canibais': 0},
-            {'missionarios': 1, 'canibais': 1},
-            {'missionarios': 0, 'canibais': 1},
-            {'missionarios': 0, 'canibais': 2},
-        ]
+        if self.tamanho_barco == 2:
+            movimentos = [
+                {'missionarios': 2, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 2},
+            ]
+        
+        elif self.tamanho_barco == 3:
+            movimentos = [
+                {'missionarios': 2, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 2},
+                {'missionarios': 3, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 2},
+                {'missionarios': 2, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 3},
+            ]
+        elif self.tamanho_barco == 4:
+            movimentos = [
+                {'missionarios': 2, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 2},
+                {'missionarios': 3, 'canibais': 0},
+                {'missionarios': 1, 'canibais': 2},
+                {'missionarios': 2, 'canibais': 1},
+                {'missionarios': 0, 'canibais': 3},
+                {'missionarios': 0, 'canibais': 4},
+                {'missionarios': 4, 'canibais': 0},
+                {'missionarios': 2, 'canibais': 2},
+                {'missionarios': 3, 'canibais': 1},
+                {'missionarios': 1, 'canibais': 3},
+            ]
+        else:
+            print "Tamanho do barco grande demais!!!"
+            return
+                
         # Gera todos os possíveis estados e armazena apenas os válidos na lista de filhos
         # do estado atual
         for movimento in movimentos:
@@ -114,8 +153,8 @@ class Estado():
                 canibais_dir = self.canibais_dir - movimento['canibais']
                 canibais_esq = self.canibais_esq + movimento['canibais']
             # Cria o estado do filho e caso este seja válido, o adiciona à lista de filhos do pai
-            filho = Estado(missionarios_esq, missionarios_dir, canibais_esq,
-                           canibais_dir, novo_lado_rio)
+            filho = Estado(self.num_pessoas, missionarios_esq, missionarios_dir, canibais_esq,
+                           canibais_dir, novo_lado_rio, self.tamanho_barco)
             filho.pai = self
             filho.profundidade = self.profundidade + 1
             if filho.estado_valido():
@@ -127,7 +166,7 @@ class Missionarios_Canibais():
         Resolve o problema dos missionários e canibais, gerando para isso uma árvore de estados.
     """
 
-    def __init__(self):
+    def __init__(self, num_pessoas, tam_barco):
         """
             Inicializa uma instância do problema com uma raiz pré-definida e ainda sem solução.
         """
@@ -135,9 +174,11 @@ class Missionarios_Canibais():
         """ Insere a raiz na fila de execução, que será utilizada para fazer uma busca em largura; cria uma pilha de execução vazia que será usada na busca em profundidade;
         e uma fronteira de estados, usada nas buscas heurísticas.
         """
-        self.fila = [Estado(3, 0, 3, 0, 'esq')]
+        self.num_pessoas = num_pessoas
+        self.tam_barco = tam_barco
+        self.fila = [Estado(self.num_pessoas, self.num_pessoas, 0, self.num_pessoas, 0, 'esq', self.tam_barco)]
         self.pilha = None
-        self.fronteira_estados = [Estado(3, 0, 3, 0, 'esq')]
+        self.fronteira_estados = [Estado(self.num_pessoas, self.num_pessoas, 0, self.num_pessoas, 0, 'esq', self.tam_barco)]
         self.solucao = []
         self.numero_estados = 0
         self.estados_visitados = []
@@ -204,6 +245,7 @@ class Missionarios_Canibais():
             if elemento.estado_final():
                 fim = time.time()
                 profundidade_solucao = elemento.profundidade
+                print "BUSCA EM LARGURA"    
                 return self.mostrar_resultados(self.solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             elemento.gerar_filhos()
@@ -218,7 +260,7 @@ class Missionarios_Canibais():
     """
     def gerar_solucao_busca_profundidade(self):
         self.pilha = Pilha()
-        self.pilha.push(Estado(3, 0, 3, 0, 'esq'))
+        self.pilha.push(Estado(self.num_pessoas, self.num_pessoas, 0, self.num_pessoas, 0, 'esq', self.tam_barco))
         numero_estados_visitados = 0
         profundidade_maxima = 0
         tamanho_maximo_fronteira = 0
@@ -239,6 +281,7 @@ class Missionarios_Canibais():
                 while elemento.pai:
                     self.solucao.insert(0, elemento.pai)
                     elemento = elemento.pai
+                print "BUSCA EM PROFUNDIDADE"    
                 return self.mostrar_resultados(self.solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             self.estados_visitados.append(elemento)
@@ -267,21 +310,20 @@ class Missionarios_Canibais():
                 if elemento.estado_final():
                     fim = time.time()
                     profundidade_solucao = elemento.profundidade
+                    print "BUSCA GULOSA"
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao,
-                            profundidade_solucao, fim-inicio,
-                            tamanho_maximo_fronteira, profundidade_maxima,
+                    return self.mostrar_resultados(solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
                             numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
                  #Caso não seja encontrado o estado final, o estado menor custo da fronteira é expandido e a busca continua.
             estado_menor_custo = self.menor_custo()
             estado_menor_custo.gerar_filhos()
+            self.fronteira_estados = []
             for i in estado_menor_custo.filhos:
-                if not self.verifica(i, self.fronteira_estados) and not self.verifica(i, estados_visitados):
+                if not self.verifica(i, estados_visitados):
                     self.fronteira_estados.append(i)   
-            self.fronteira_estados.remove(estado_menor_custo)
 
         
     def gerar_solucao_busca_A(self):
@@ -302,10 +344,11 @@ class Missionarios_Canibais():
                 if elemento.estado_final():
                     fim = time.time()
                     profundidade_solucao = elemento.profundidade
+                    print "BUSCA A*"
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
-                    #self.solucao = [elemento]
+                    return self.mostrar_resultados(solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
+                            numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
                  #Caso não seja encontrado o estado final, o estado menor custo da fronteira é expandido e a busca continua.
@@ -335,3 +378,16 @@ class Pilha():
     #verifica se a pilha esta vazia
     def isEmpty(self) :
         return (self.items == [])
+
+if __name__ == "__main__":
+##    estado = Estado(3,0,3,0,'esq',4)
+##    estado.gerar_filhos()
+##    print "ESTADO PAI"
+##    print estado
+##    for filho in estado.filhos:
+##        print "FILHO"
+##        print filho
+    problema = Missionarios_Canibais(2, 2)
+    solucao = problema.gerar_solucao_busca_profundidade()
+    print solucao
+        
