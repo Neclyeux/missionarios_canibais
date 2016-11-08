@@ -212,9 +212,8 @@ class Missionarios_Canibais():
                 estado_menor_custo = estado
         return estado_menor_numero
 
-    def mostrar_resultados(self, solucao, profundidade_solucao, tempo, tamanho_fronteira, profundidade_maxima, numero_estados_visitados ):
-        string = ''
-        string += '-> SOLUCAO: \n\n'
+    def mostrar_resultados(self, solucao, string, profundidade_solucao, tempo, tamanho_fronteira, profundidade_maxima, numero_estados_visitados ):
+        string += '### SOLUCAO: \n\n'
         for i in solucao:
             string += str(i) + '\n'
             string += 60 * '-' + '\n'
@@ -231,11 +230,13 @@ class Missionarios_Canibais():
         busca em largura, que utiliza uma FILA em sua execução.
     """
     def gerar_solucao_busca_largura(self):
+        string = ""
         numero_estados_visitados = 0
         profundidade_maxima = 0
         tamanho_maximo_fronteira = 0
         inicio = time.time()
         for elemento in self.fila:
+            string += "\n# Elemento Atual: \n" + str(elemento) + "\n\n"
             numero_estados_visitados+=1
             self.solucao.append(elemento)
             if elemento.profundidade > profundidade_maxima:
@@ -244,14 +245,18 @@ class Missionarios_Canibais():
                 tamanho_maximo_fronteira = len(self.fila)
             if elemento.estado_final():
                 fim = time.time()
-                profundidade_solucao = elemento.profundidade
-                print "BUSCA EM LARGURA"    
-                return self.mostrar_resultados(self.solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
+                profundidade_solucao = elemento.profundidade   
+                return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             elemento.gerar_filhos()
+            string += "-> Filhos gerados: \n"
             for i in elemento.filhos:
                 if not self.verifica(i, self.fila):
+                    string += str(i) + "\n" + 60 * '-' + '\n'
                     self.fila.append(i)
+            string += "\n-> Fila atualizada: \n"
+            for i in self.fila:
+                string += str(i) + "\n" + 60 * '-' + '\n'
         
         
     """
@@ -259,6 +264,7 @@ class Missionarios_Canibais():
         busca em profundidade, que utiliza uma PILHA em sua execução.
     """
     def gerar_solucao_busca_profundidade(self):
+        string = ""
         self.pilha = Pilha()
         self.pilha.push(Estado(self.num_pessoas, self.num_pessoas, 0, self.num_pessoas, 0, 'esq', self.tam_barco))
         numero_estados_visitados = 0
@@ -269,6 +275,7 @@ class Missionarios_Canibais():
             if len(self.pilha) > tamanho_maximo_fronteira:
                 tamanho_maximo_fronteira = len(self.pilha) 
             elemento = self.pilha.pop()
+            string += "\n# Elemento Atual: \n" + str(elemento) + "\n\n"
             numero_estados_visitados+=1
             if elemento.profundidade > profundidade_maxima:
                 profundidade_maxima = elemento.profundidade
@@ -280,19 +287,24 @@ class Missionarios_Canibais():
                 self.solucao = [elemento]
                 while elemento.pai:
                     self.solucao.insert(0, elemento.pai)
-                    elemento = elemento.pai
-                print "BUSCA EM PROFUNDIDADE"    
-                return self.mostrar_resultados(self.solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
+                    elemento = elemento.pai   
+                return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             self.estados_visitados.append(elemento)
             elemento.gerar_filhos()
+            string += "-> Filhos gerados: \n"
             for i in elemento.filhos:
                 if not self.verifica(i, self.pilha.items):
                     if not self.verifica(i, self.estados_visitados):
+                        string += str(i) + "\n" + 60 * '-' + '\n'
                         self.pilha.push(i)
+            string += "\n-> Pilha atualizada: \n"
+            for i in self.pilha.items:
+                string += str(i) + "\n" + 60 * '-' + '\n'
 
 
     def gerar_solucao_busca_gulosa(self):
+        string = ""
         estados_visitados = []
         solucao =[]
         numero_estados_visitados = 0
@@ -310,23 +322,30 @@ class Missionarios_Canibais():
                 if elemento.estado_final():
                     fim = time.time()
                     profundidade_solucao = elemento.profundidade
-                    print "BUSCA GULOSA"
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
+                    return self.mostrar_resultados(solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
                             numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
                  #Caso não seja encontrado o estado final, o estado menor custo da fronteira é expandido e a busca continua.
             estado_menor_custo = self.menor_custo()
+            string += "\n# Elemento Atual: \n" + str(estado_menor_custo) + "\n\n"
             estado_menor_custo.gerar_filhos()
-            self.fronteira_estados = []
+            string += "-> Filhos gerados: \n"
+            #self.fronteira_estados = []
             for i in estado_menor_custo.filhos:
-                if not self.verifica(i, estados_visitados):
-                    self.fronteira_estados.append(i)   
+                if not self.verifica(i, estados_visitados) and not self.verifica(i, self.fronteira_estados):
+                    string += str(i) + "\n" + 60 * '-' + '\n'
+                    self.fronteira_estados.append(i)
+            self.fronteira_estados.remove(estado_menor_custo)
+            string += "\n-> Fronteira de espaco de estados atualizada: \n"
+            for i in self.fronteira_estados:
+                string += str(i) + "\n" + 60 * '-' + '\n'
 
         
     def gerar_solucao_busca_A(self):
+        string = ""
         estados_visitados = []
         solucao = []
         numero_estados_visitados = 0
@@ -344,20 +363,26 @@ class Missionarios_Canibais():
                 if elemento.estado_final():
                     fim = time.time()
                     profundidade_solucao = elemento.profundidade
-                    print "BUSCA A*"
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
+                    return self.mostrar_resultados(solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
                             numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
                  #Caso não seja encontrado o estado final, o estado menor custo da fronteira é expandido e a busca continua.
             estado_menor_custo = self.menor_custo_h()
+            string += "\n# Elemento Atual: \n" + str(estado_menor_custo) + "\n\n"
             estado_menor_custo.gerar_filhos()
+            string += "-> Filhos gerados: \n"
             for i in estado_menor_custo.filhos:
                 if not self.verifica(i, self.fronteira_estados) and not self.verifica(i, estados_visitados):
+                    string += str(i) + "\n" + 60 * '-' + '\n'
                     self.fronteira_estados.append(i) 
             self.fronteira_estados.remove(estado_menor_custo)
+            string += "\n-> Fronteira de espaco de estados atualizada: \n"
+            for i in self.fronteira_estados:
+                string += str(i) + "\n" + 60 * '-' + '\n'
+                
             
 class Pilha():
     def __init__(self) :
@@ -378,16 +403,3 @@ class Pilha():
     #verifica se a pilha esta vazia
     def isEmpty(self) :
         return (self.items == [])
-
-if __name__ == "__main__":
-##    estado = Estado(3,0,3,0,'esq',4)
-##    estado.gerar_filhos()
-##    print "ESTADO PAI"
-##    print estado
-##    for filho in estado.filhos:
-##        print "FILHO"
-##        print filho
-    problema = Missionarios_Canibais(2, 2)
-    solucao = problema.gerar_solucao_busca_profundidade()
-    print solucao
-        
