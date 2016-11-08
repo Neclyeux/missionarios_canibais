@@ -13,15 +13,15 @@ class AppScript(Frame):
         self.string = ""
         self.estado = None
 
-        scrollbar = Scrollbar()
-        scrollbar.pack(side=RIGHT, fill=Y)
-
         self.frame1 = Frame(self)
         self.frame1.pack(side=TOP)
         self.frame2 = Frame(self)
         self.frame2.pack(pady=20)
         self.frame3 = Frame(self)
         self.frame3.pack(pady=10)
+
+        scrollbar = Scrollbar(self.frame1)
+        scrollbar.pack(side=RIGHT, fill=Y)  
 
         self.fonte1 = ('Verdana', '10', 'bold')
 
@@ -74,34 +74,46 @@ class AppScript(Frame):
         self.string = ""
         numero_pessoas = int(self.campo1.get())
         tamanho_barco = int(self.campo2.get())
-        self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
-        self.string = self.estado.gerar_solucao_busca_largura()
-        self.setaTxt(self.string)
+        if tamanho_barco < 2:
+            tkMessageBox.showerror("ERRO", "Tamanho do barco deve ser >= 2")
+        else:
+            self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
+            self.string = self.estado.gerar_solucao_busca_largura()
+            self.setaTxt(self.string)
 
     def busca_profundidade(self, event):
         self.string = ""
         numero_pessoas = int(self.campo1.get())
         tamanho_barco = int(self.campo2.get())
-        self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
-        self.string = self.estado.gerar_solucao_busca_profundidade()
-        self.setaTxt(self.string)
+        if tamanho_barco < 2:
+            tkMessageBox.showerror("ERRO", "Tamanho do barco deve ser >= 2")
+        else:
+            self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
+            self.string = self.estado.gerar_solucao_busca_profundidade()
+            self.setaTxt(self.string)
 
     def busca_gulosa(self, event):
         self.string = ""
         numero_pessoas = int(self.campo1.get())
         tamanho_barco = int(self.campo2.get())
-        self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
-        self.string = self.estado.gerar_solucao_busca_gulosa()
-        self.setaTxt(self.string)
+        if tamanho_barco < 2:
+            tkMessageBox.showerror("ERRO", "Tamanho do barco deve ser >= 2")
+        else:
+            self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
+            self.string = self.estado.gerar_solucao_busca_gulosa()
+            self.setaTxt(self.string)
 
     def busca_heuristica_A(self, event):
         self.string = ""
         numero_pessoas = int(self.campo1.get())
         tamanho_barco = int(self.campo2.get())
-        self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
-        self.string = self.estado.gerar_solucao_busca_A()
-        self.setaTxt(self.string)
-        
+        if tamanho_barco < 2:
+            tkMessageBox.showerror("ERRO", "Tamanho do barco deve ser >= 2")
+        else:
+            self.estado = Missionarios_Canibais(numero_pessoas, tamanho_barco)
+            self.string = self.estado.gerar_solucao_busca_A()
+            self.setaTxt(self.string)
+            
     def setaTxt(self, string):
         self.texto.configure(state=NORMAL)
         self.texto.delete(1.0,END)
@@ -112,7 +124,7 @@ raiz = Tk()
 aplicativo = AppScript(raiz)
 aplicativo.master.title("MISSIONARIOS E CANIBAIS")
 aplicativo.pack()
-tkMessageBox.showinfo("COMPONENTES", 'Igor Rafael\nLuiz Magno\nNeclyeux Sousa')
+tkMessageBox.showinfo("AVISOS", '1. Para quantidade de pessoas acima de 3 e até 5 o barco precisa conter 3 pessoas.\n2. Para acima de 5 pessoas, o barco precisa conter 4 pessoas.\nCOMPONENTES\nIgor Rafael\nLuiz Magno\nNeclyeux Sousa')
 raiz.mainloop()
 
 

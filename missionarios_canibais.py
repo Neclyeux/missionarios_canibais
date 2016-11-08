@@ -213,7 +213,6 @@ class Missionarios_Canibais():
         return estado_menor_numero
 
     def mostrar_resultados(self, solucao, string, profundidade_solucao, tempo, tamanho_fronteira, profundidade_maxima, numero_estados_visitados ):
-        string += '### SOLUCAO: \n\n'
         for i in solucao:
             string += str(i) + '\n'
             string += 60 * '-' + '\n'
@@ -230,7 +229,7 @@ class Missionarios_Canibais():
         busca em largura, que utiliza uma FILA em sua execução.
     """
     def gerar_solucao_busca_largura(self):
-        string = ""
+        string = "\t\t\tBUSCA EM LARGURA:\n"
         numero_estados_visitados = 0
         profundidade_maxima = 0
         tamanho_maximo_fronteira = 0
@@ -238,14 +237,19 @@ class Missionarios_Canibais():
         for elemento in self.fila:
             string += "\n# Elemento Atual: \n" + str(elemento) + "\n\n"
             numero_estados_visitados+=1
-            self.solucao.append(elemento)
+            #self.solucao.append(elemento)
             if elemento.profundidade > profundidade_maxima:
                 profundidade_maxima = elemento.profundidade
             if len(self.fila) > tamanho_maximo_fronteira:
                 tamanho_maximo_fronteira = len(self.fila)
             if elemento.estado_final():
                 fim = time.time()
-                profundidade_solucao = elemento.profundidade   
+                profundidade_solucao = elemento.profundidade
+                self.solucao = [elemento]
+                while elemento.pai:
+                    self.solucao.insert(0, elemento.pai)
+                    elemento = elemento.pai
+                string += "\n\n" + 8 * "#" + " SOLUCAO BUSCA EM LARGURA: " + 8 * "#" + "\n\n"
                 return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             elemento.gerar_filhos()
@@ -264,7 +268,7 @@ class Missionarios_Canibais():
         busca em profundidade, que utiliza uma PILHA em sua execução.
     """
     def gerar_solucao_busca_profundidade(self):
-        string = ""
+        string = "\t\t\tBUSCA EM PROFUNDIDADE:\n"
         self.pilha = Pilha()
         self.pilha.push(Estado(self.num_pessoas, self.num_pessoas, 0, self.num_pessoas, 0, 'esq', self.tam_barco))
         numero_estados_visitados = 0
@@ -287,7 +291,8 @@ class Missionarios_Canibais():
                 self.solucao = [elemento]
                 while elemento.pai:
                     self.solucao.insert(0, elemento.pai)
-                    elemento = elemento.pai   
+                    elemento = elemento.pai
+                string += "\n\n" + 8 * "#" + " SOLUCAO BUSCA EM PROFUNDIDADE: " + 8 * "#" + "\n\n"
                 return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima, numero_estados_visitados)
                 break;
             self.estados_visitados.append(elemento)
@@ -304,9 +309,9 @@ class Missionarios_Canibais():
 
 
     def gerar_solucao_busca_gulosa(self):
-        string = ""
+        string = "\t\t\tBUSCA PELA HEURISTICA GULOSA:\n"
         estados_visitados = []
-        solucao =[]
+        #solucao =[]
         numero_estados_visitados = 0
         profundidade_maxima = 0
         tamanho_maximo_fronteira = 0
@@ -314,7 +319,7 @@ class Missionarios_Canibais():
         while not self.solucao:
             for elemento in self.fronteira_estados:
                 numero_estados_visitados+=1
-                solucao.append(elemento)
+                #solucao.append(elemento)
                 if elemento.profundidade > profundidade_maxima:
                     profundidade_maxima = elemento.profundidade
                 if len(self.fronteira_estados) > tamanho_maximo_fronteira:
@@ -324,7 +329,12 @@ class Missionarios_Canibais():
                     profundidade_solucao = elemento.profundidade
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
+                    self.solucao = [elemento]
+                    while elemento.pai:
+                        self.solucao.insert(0, elemento.pai)
+                        elemento = elemento.pai
+                    string += "\n\n" + 8 * "#" + " SOLUCAO HEURISTICA GULOSA: " + 8 * "#" + "\n\n"
+                    return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
                             numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
@@ -345,9 +355,9 @@ class Missionarios_Canibais():
 
         
     def gerar_solucao_busca_A(self):
-        string = ""
+        string = "\t\t\tBUSCA PELA HEURISTICA A*:\n"
         estados_visitados = []
-        solucao = []
+        #solucao = []
         numero_estados_visitados = 0
         profundidade_maxima = 0
         tamanho_maximo_fronteira = 0
@@ -355,7 +365,7 @@ class Missionarios_Canibais():
         while not self.solucao:
             for elemento in self.fronteira_estados:
                 numero_estados_visitados+=1
-                solucao.append(elemento)
+                #solucao.append(elemento)
                 if elemento.profundidade > profundidade_maxima:
                     profundidade_maxima = elemento.profundidade
                 if len(self.fronteira_estados) > tamanho_maximo_fronteira:
@@ -365,7 +375,12 @@ class Missionarios_Canibais():
                     profundidade_solucao = elemento.profundidade
                     # Se a solução foi encontrada, o caminho que compõe a solução é gerado realizando
                     # o caminho de volta até a raiz da árvore de estados e então encerra a busca
-                    return self.mostrar_resultados(solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
+                    self.solucao = [elemento]
+                    while elemento.pai:
+                        self.solucao.insert(0, elemento.pai)
+                        elemento = elemento.pai
+                    string += "\n\n" + 8 * "#" + " SOLUCAO HEURISTICA A*: " + 8 * "#" + "\n\n"
+                    return self.mostrar_resultados(self.solucao, string, profundidade_solucao, fim-inicio, tamanho_maximo_fronteira, profundidade_maxima,
                             numero_estados_visitados)
                     break;
                 estados_visitados.append(elemento)
